@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wordle Solver</title>
+  <style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-family: Georgia, serif; line-height: 1.5; }
+  body { margin: 2rem auto; max-width: 640px; padding: 0; }
+  h1, h2, h3, p { margin-bottom: 1rem; }
+  input, button, #error, #output { font-size: 1.1rem; }
+  #error { color: red; }
+  @media screen and (max-width: 660px) {
+    body { padding: 0 1rem; }
+  }
+  </style>
+</head>
+<body>
+  <h1>Wordle Solver</h1>
+  <p>This is an AI player created by <a href="https://mkremins.github.io">Max Kreminski</a> for the word-guessing game <a href="https://www.powerlanguage.co.uk/wordle/">Wordle</a>. Enter a target word below and the solver will make a sequence of guesses intended to discover the target word in as few steps as possible.</p>
+  <h2>Input target word:</h2>
+  <p><input id="target-word" type="text" placeholder="Type here..."><button id="start-guessing">GUESS</button><div id="error"></div></p>
+  <h2>Guesses:</h2>
+  <pre id="output">(Enter a target word first)</pre>
+  <script src="./solver.js"></script>
+  <script>
+  function fetchResource(path, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4) {
+        const value = xhr.status == 200 ? xhr.responseText : null;
+        callback(value);
+      }
+    };
+    xhr.open("GET", path);
+    xhr.send();
+  }
+
+  const targetWordInput = document.getElementById("target-word");
+  const startGuessingButton = document.getElementById("start-guessing");
+  const errorNode = document.getElementById("error");
+  const outputNode = document.getElementById("output");
+
+  let words = null;
+  let topwords = null;
+  fetchResource("./enable.txt", text => {
+    words = text.toLowerCase().split("\n");
+  });
+  fetchResource("./20k.txt", text => {
+    topwords = text.toLowerCase().split("\n");
+  });
+
+  startGuessingButton.onclick = function() {
+    if (words === null || topwords === null) {
+      errorNode.innerText = "Wordlist missing!";
+      return;
+    }
+    const targetWord = targetWordInput.value.trim().toLowerCase();
+    console.log("target word", targetWord);
+    if (!words.includes(targetWord)) {
+      errorNode.innerText = "Target word not in dictionary!";
+      return;
+    }
+    errorNode.innerText = "";
+    const guesses = testSolver(targetWord, words, topwords);
+    outputNode.innerText = guesses.join("\n");
+  }
+  </script>
+</body>
+</html>
