@@ -46,6 +46,11 @@
   let topwords = null;
   fetchResource("./enable.txt", text => {
     words = text.toLowerCase().split("\n");
+    const badwordsURL = "https://raw.githubusercontent.com/dariusk/wordfilter/master/lib/badwords.json";
+    fetchResource(badwordsURL, badwordsText => {
+      const badwords = JSON.parse(badwordsText);
+      words = words.filter(word => !badwords.some(badword => word.includes(badword)));
+    });
   });
   fetchResource("./20k.txt", text => {
     topwords = text.toLowerCase().split("\n");
